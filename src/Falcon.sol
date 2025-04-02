@@ -61,14 +61,12 @@ contract Falcon {
         uint[] memory h // public key
     ) public view returns (address) {
         require(h.length == 512, "Invalid public key length");
+        require(signature.salt.length==40, "Invalid salt length");//ZKNOX, 13/02/25: CVETH_2025_080201
         require(signature.s1.length == 512, "Invalid signature length");
         uint256[] memory s1 = new uint256[](512);
         for (uint i = 0; i < 512; i++) {
-            if (signature.s1[i] < 0) {
-                s1[i] = uint256(int256(q) + signature.s1[i]);
-            } else {
-                s1[i] = uint256(signature.s1[i]);
-            }
+            require(signature.s1[i] >= 0, "Invalid coefficient");//ZKNOX, 13/02/25: CVETH_2025_080202
+            s1[i]=uint256(signature.s1[i]);
         }
         uint256[] memory hashed = hashToPoint(msgs, signature.salt);
         uint256[] memory s0 = ntt.subZQ(hashed, ntt.mulZQ(s1, h));
